@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -35,6 +36,7 @@ public class myCanvas extends View {
     Boolean IsChecked = false;
     int width = 0, height = 0;
     Boolean IsSelected = false;
+    int cx= -1, cy = -1;
 
 
     public myCanvas(Context context) {
@@ -62,13 +64,10 @@ public class myCanvas extends View {
 
         if(command.equals("clear")) {
             mBitmap.eraseColor(Color.parseColor("#fdf39a"));
-            command = "";
         }
-
         if(command.equals("save")){
 
             Save(path + "img.jpg");
-            command = "";
             Toast.makeText(getContext(),"SAVE",Toast.LENGTH_SHORT).show();
         }
 
@@ -85,31 +84,30 @@ public class myCanvas extends View {
                 height/2,false);
                 int x1 = mCanvas.getWidth() /2 - sBitmap.getWidth()/2;
                 int y1 = mCanvas.getHeight()/2 - sBitmap.getHeight()/2;
-                mCanvas.drawBitmap(sBitmap,x1,y1,null);
+                mCanvas.drawBitmap(sBitmap,x1,y1,mPaint);
             }
             else Toast.makeText(getContext(),"저장된 파일이 없습니다",Toast.LENGTH_SHORT).show();
-
-            command = "";
         }
 
         if(option.equals("bluring")){
-            BlurMaskFilter blur = new BlurMaskFilter(100,
-                    BlurMaskFilter.Blur.INNER);
-            mPaint.setMaskFilter(blur);
-        }
-        else if(option.equals("coloring")){
-            BlurMaskFilter blur = new BlurMaskFilter(100,
+            BlurMaskFilter blur = new BlurMaskFilter(50,
                     BlurMaskFilter.Blur.OUTER);
             mPaint.setMaskFilter(blur);
         }
-        else if(option.equals("nofilter")){
+        if(option.equals("coloring")){
+            BlurMaskFilter blur = new BlurMaskFilter(50,
+                    BlurMaskFilter.Blur.SOLID);
+            mPaint.setMaskFilter(blur);
+        }
+        if(option.equals("nofilter")){
             mPaint.reset();
         }
-        else if(option.equals("big")) mPaint.setStrokeWidth(5);
-        else if(option.equals("small")) mPaint.setStrokeWidth(3);
-        else if(option.equals("red")) mPaint.setColor(Color.RED);
-        else if(option.equals("blue")) mPaint.setColor(Color.BLUE);
-
+        if(option.equals("big")) {mPaint.setStrokeWidth(5);}
+        if(option.equals("small")) mPaint.setStrokeWidth(3);
+        if(option.equals("red")) mPaint.setColor(Color.RED);
+        if(option.equals("blue")) mPaint.setColor(Color.BLUE);
+        command="";
+        option="";
         canvas.drawBitmap(mBitmap,0,0,null);
     }
 
@@ -120,22 +118,27 @@ public class myCanvas extends View {
         mPaint.setStrokeWidth(3);
         mCanvas = new Canvas();
         mCanvas.setBitmap(mBitmap);
-
     }
 
     private void drawStamp(){
+        Matrix matrix = new Matrix();
         Bitmap img = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher);
         width = img.getWidth();
         height = img.getHeight();
         mCanvas.save();
-        if(operation.equals("rotate"))
+        if(operation.equals("rotate")){
             mCanvas.rotate(30,mCanvas.getWidth()/2,mCanvas.getHeight()/2);
+        }
+
         else if(operation.equals("move"))
             mCanvas.translate(10,10);
-        else if(operation.equals("scale"))
+        else if(operation.equals("scale")){
             mCanvas.scale(1.5f,1.5f);
+            sx= (int)(cx / 1.5 - (width /2)) ;sy=(int)(cy / 1.5- (height /2));
+        }
+
         else if(operation.equals("skew"))
-            mCanvas.skew(0.2f,0.2f);
+            mCanvas.skew(0.2f,0.0f);
         mCanvas.drawBitmap(img,sx,sy,mPaint);
 }
     public void setOperation(String op){
@@ -195,10 +198,12 @@ public class myCanvas extends View {
             }
         }
         else{
-            int x = (int)event.getX();
-            int y = (int)event.getY();
+            cx = (int)event.getX();
+            cy = (int)event.getY();
             if(event.getAction() == MotionEvent.ACTION_DOWN){
-               sx=x - (width/2) ;sy=y - (height/2);
+               sx= cx - (width/2) ;sy=cy - (height/2);
+                Toast.makeText(getContext(),Integer.toString(sx) + " "+
+                Integer.toString(sy),Toast.LENGTH_SHORT).show();
                 invalidate();
             }
         }
