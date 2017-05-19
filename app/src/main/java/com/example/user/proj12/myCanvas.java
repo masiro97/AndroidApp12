@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.support.annotation.Nullable;
@@ -95,9 +97,14 @@ public class myCanvas extends View {
             mPaint.setMaskFilter(blur);
         }
         if(option.equals("coloring")){
-            BlurMaskFilter blur = new BlurMaskFilter(50,
-                    BlurMaskFilter.Blur.SOLID);
-            mPaint.setMaskFilter(blur);
+            float[] matrix_array = {
+                    2f, 0f, 0f, 0f, -25f,
+                    0f, 2f, 0f, 0f, -25f,
+                    0f, 0f, 2f, 0f, -25f,
+                    0f, 0f, 0f, 1f, 0f
+            };
+            ColorMatrix matrix = new ColorMatrix(matrix_array);
+            mPaint.setColorFilter(new ColorMatrixColorFilter(matrix));
         }
         if(option.equals("nofilter")){
             mPaint.reset();
@@ -129,14 +136,12 @@ public class myCanvas extends View {
         if(operation.equals("rotate")){
             mCanvas.rotate(30,mCanvas.getWidth()/2,mCanvas.getHeight()/2);
         }
-
         else if(operation.equals("move"))
             mCanvas.translate(10,10);
         else if(operation.equals("scale")){
             mCanvas.scale(1.5f,1.5f);
             sx= (int)(cx / 1.5 - (width /2)) ;sy=(int)(cy / 1.5- (height /2));
         }
-
         else if(operation.equals("skew"))
             mCanvas.skew(0.2f,0.0f);
         mCanvas.drawBitmap(img,sx,sy,mPaint);
@@ -202,8 +207,6 @@ public class myCanvas extends View {
             cy = (int)event.getY();
             if(event.getAction() == MotionEvent.ACTION_DOWN){
                sx= cx - (width/2) ;sy=cy - (height/2);
-                Toast.makeText(getContext(),Integer.toString(sx) + " "+
-                Integer.toString(sy),Toast.LENGTH_SHORT).show();
                 invalidate();
             }
         }
